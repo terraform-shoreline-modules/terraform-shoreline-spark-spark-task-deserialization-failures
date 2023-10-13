@@ -1,0 +1,126 @@
+{
+  "name": "spark_task_deserialization_failures",
+  "description": "This incident type refers to instances where Spark tasks are failing due to deserialization errors. This can occur when the serialized data does not match the expected format, causing the task to fail. Deserialization errors can be challenging to handle, and require careful consideration to ensure that the root cause is identified and addressed appropriately.",
+  "params": [
+    {
+      "name": "SPARK_PID",
+      "value": ""
+    },
+    {
+      "name": "SPARK_LOG_FILE",
+      "value": ""
+    },
+    {
+      "name": "SPARK_VERSION",
+      "value": ""
+    },
+    {
+      "name": "PATH_TO_CLASS_FILES",
+      "value": ""
+    },
+    {
+      "name": "SERIALIZED_DATA_FILE",
+      "value": ""
+    },
+    {
+      "name": "CLASS_NAME",
+      "value": ""
+    },
+    {
+      "name": "NEW_DESERIALIZATION_LIBRARY",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Spark Task Deserialization Failures\nThis incident type refers to instances where Spark tasks are failing due to deserialization errors. This can occur when the serialized data does not match the expected format, causing the task to fail. Deserialization errors can be challenging to handle, and require careful consideration to ensure that the root cause is identified and addressed appropriately."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check Spark logs for deserialization errors"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `grep \"java.io.InvalidClassException\" ${SPARK_LOG_FILE}`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check which classes are being deserialized when the error occurs"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `jstack ${SPARK_PID} | grep \"java.io.ObjectInputStream.readClassDescriptor\"`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the serialized data matches the expected class"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `javap -cp ${PATH_TO_CLASS_FILES} -verbose ${CLASS_NAME} | grep \"minor version\"`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the serialized data is corrupted"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `xxd ${SERIALIZED_DATA_FILE} | head`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Incompatibility between the Spark version and the serialization/deserialization library used for the job."
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_check_spark_deser_compat()"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Update the deserialization library to one that's compatible with the Spark version"
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_spark_ser_update($SPARK_VERSION, $NEW_DESERIALIZATION_LIBRARY)"
+    }
+  ]
+}
