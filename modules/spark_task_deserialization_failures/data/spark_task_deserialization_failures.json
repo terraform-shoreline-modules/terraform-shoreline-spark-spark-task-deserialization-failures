@@ -3,19 +3,11 @@
   "description": "This incident type refers to instances where Spark tasks are failing due to deserialization errors. This can occur when the serialized data does not match the expected format, causing the task to fail. Deserialization errors can be challenging to handle, and require careful consideration to ensure that the root cause is identified and addressed appropriately.",
   "params": [
     {
-      "name": "SPARK_PID",
-      "value": ""
-    },
-    {
       "name": "SPARK_LOG_FILE",
       "value": ""
     },
     {
-      "name": "SPARK_VERSION",
-      "value": ""
-    },
-    {
-      "name": "PATH_TO_CLASS_FILES",
+      "name": "SPARK_PID",
       "value": ""
     },
     {
@@ -23,11 +15,19 @@
       "value": ""
     },
     {
+      "name": "NEW_DESERIALIZATION_LIBRARY",
+      "value": ""
+    },
+    {
+      "name": "PATH_TO_CLASS_FILES",
+      "value": ""
+    },
+    {
       "name": "CLASS_NAME",
       "value": ""
     },
     {
-      "name": "NEW_DESERIALIZATION_LIBRARY",
+      "name": "SPARK_VERSION",
       "value": ""
     },
     {
@@ -120,7 +120,7 @@
       "name": "cell_13",
       "type": "OP_LANG",
       "enabled": true,
-      "content": "host | host_name=$HOST_NAME | invoke_spark_ser_update($SPARK_VERSION, $NEW_DESERIALIZATION_LIBRARY)"
+      "content": "host | host_name=$HOST_NAME | invoke_install_deserialization_library($NEW_DESERIALIZATION_LIBRARY, $SPARK_VERSION)"
     }
   ]
 }

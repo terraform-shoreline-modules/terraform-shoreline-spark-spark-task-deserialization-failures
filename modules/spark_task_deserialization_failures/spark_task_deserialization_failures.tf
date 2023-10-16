@@ -1,7 +1,7 @@
 resource "shoreline_notebook" "spark_task_deserialization_failures" {
   name       = "spark_task_deserialization_failures"
   data       = file("${path.module}/data/spark_task_deserialization_failures.json")
-  depends_on = [shoreline_action.invoke_check_spark_deser_compat,shoreline_action.invoke_spark_ser_update]
+  depends_on = [shoreline_action.invoke_check_spark_deser_compat,shoreline_action.invoke_install_deserialization_library]
 }
 
 resource "shoreline_file" "check_spark_deser_compat" {
@@ -14,12 +14,12 @@ resource "shoreline_file" "check_spark_deser_compat" {
   enabled          = true
 }
 
-resource "shoreline_file" "spark_ser_update" {
-  name             = "spark_ser_update"
-  input_file       = "${path.module}/data/spark_ser_update.sh"
-  md5              = filemd5("${path.module}/data/spark_ser_update.sh")
+resource "shoreline_file" "install_deserialization_library" {
+  name             = "install_deserialization_library"
+  input_file       = "${path.module}/data/install_deserialization_library.sh"
+  md5              = filemd5("${path.module}/data/install_deserialization_library.sh")
   description      = "Update the deserialization library to one that's compatible with the Spark version"
-  destination_path = "/tmp/spark_ser_update.sh"
+  destination_path = "/tmp/install_deserialization_library.sh"
   resource_query   = "host"
   enabled          = true
 }
@@ -34,13 +34,13 @@ resource "shoreline_action" "invoke_check_spark_deser_compat" {
   depends_on  = [shoreline_file.check_spark_deser_compat]
 }
 
-resource "shoreline_action" "invoke_spark_ser_update" {
-  name        = "invoke_spark_ser_update"
+resource "shoreline_action" "invoke_install_deserialization_library" {
+  name        = "invoke_install_deserialization_library"
   description = "Update the deserialization library to one that's compatible with the Spark version"
-  command     = "`chmod +x /tmp/spark_ser_update.sh && /tmp/spark_ser_update.sh`"
-  params      = ["SPARK_VERSION","NEW_DESERIALIZATION_LIBRARY"]
-  file_deps   = ["spark_ser_update"]
+  command     = "`chmod +x /tmp/install_deserialization_library.sh && /tmp/install_deserialization_library.sh`"
+  params      = ["NEW_DESERIALIZATION_LIBRARY","SPARK_VERSION"]
+  file_deps   = ["install_deserialization_library"]
   enabled     = true
-  depends_on  = [shoreline_file.spark_ser_update]
+  depends_on  = [shoreline_file.install_deserialization_library]
 }
 
